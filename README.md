@@ -358,21 +358,88 @@ the implementation phase, the proportion of receiving an F in process
 grade for teams with at least 20 commits on average is lower than that
 for teams with less than 20 commits on average.
 
-      Less than 20 commits   At least 20 commits
-  --- ---------------------- ---------------------
-  A   0.47                   0.73
-  F   0.53                   0.27
+<table width="270">
+<tbody>
+<tr>
+<td width="48">
+<p>&nbsp;</p>
+</td>
+<td width="102">
+<p>Less than 20 &nbsp;&nbsp;commits</p>
+</td>
+<td width="120">
+<p>At least 20 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;commits</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>A</p>
+</td>
+<td width="102">
+<p>0.52</p>
+</td>
+<td width="120">
+<p>0.73</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>F</p>
+</td>
+<td width="102">
+<p>0.48</p>
+</td>
+<td width="120">
+<p>0.27</p>
+</td>
+</tr>
+</tbody>
+</table>
 
-      Less than 20 commits   At least 20 commits
-  --- ---------------------- ---------------------
-  A   0.52                   0.73
-  F   0.48                   0.27
+**Table 5 - Contingency table of Whether the team has at least 20 commits
+on average during design phase and Process grade**
 
-Table 5 - Contingency table of Whether the team has at least 20 commits
-on average during design phase and Process grade
+<table width="246">
+<tbody>
+<tr>
+<td width="54">
+<p>&nbsp;</p>
+</td>
+<td width="108">
+<p>Less than 20 &nbsp;&nbsp;&nbsp;commits</p>
+</td>
+<td width="84">
+<p>At least 20 commits</p>
+</td>
+</tr>
+<tr>
+<td width="54">
+<p>A</p>
+</td>
+<td width="108">
+<p>0.47</p>
+</td>
+<td width="84">
+<p>0.73</p>
+</td>
+</tr>
+<tr>
+<td width="54">
+<p>F</p>
+</td>
+<td width="108">
+<p>0.53</p>
+</td>
+<td width="84">
+<p>0.27</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
 
-Table 6 - Contingency table of Whether the team has at least 20 commits
-on average during implementation phase and Process grade
+**Table 6 - Contingency table of Whether the team has at least 20 commits
+on average during implementation phase and Process grade**
 
 ### b. Modeling
 
@@ -385,36 +452,96 @@ multicollinearity with the number of female members. Table 7 presents
 the results of the final models that predict SE grade during the design
 phase and the implementation phase.
 
-+-----------------------+-------------------+-----------------------+
-|                       | **Design phase**  | **Implementation      |
-|                       |                   | phase**               |
-+=======================+===================+=======================+
-| **Number of           | 74                | 74                    |
-| observations**        |                   |                       |
-+-----------------------+-------------------+-----------------------+
-| **Coefficient:**      | -1.06\*           | -1.046\*\*            |
-| Number of females in  |                   |                       |
-| team -                | (p-value = 0.051) | (p-value = 0.047)     |
-|                       |                   |                       |
-| at least one female   |                   |                       |
-| member                |                   |                       |
-+-----------------------+-------------------+-----------------------+
-| **Coefficient:**      | -1.0865\*         | -0.901\*              |
-| Average number of     |                   |                       |
-| commits -             | (p-value = 0.056) | (p-value = 0.095)     |
-|                       |                   |                       |
-| at least 20 commits   |                   |                       |
-+-----------------------+-------------------+-----------------------+
-| **Drop-in-deviance**  | 94.659 - 87.772   | 94.659 - 86.883       |
-| (Null deviance --     |                   |                       |
-| Residual Deviance)    | = 6.887           | = 7.776               |
-+-----------------------+-------------------+-----------------------+
-| **p-value** for       | 0.02              | 0.03                  |
-| drop-in-deviance test |                   |                       |
-| of overall fit        |                   |                       |
-+-----------------------+-------------------+-----------------------+
-| **Accuracy rate**     | 74.3%             | 73%                   |
-+-----------------------+-------------------+-----------------------+
+<table style="width: 60.1744%;">
+<tbody>
+<tr>
+<td style="width: 39%;">
+<p>&nbsp;</p>
+</td>
+<td style="width: 28%;">
+<p><strong>Design phase</strong></p>
+</td>
+<td style="width: 20.3235%;">
+<p><strong>Implementation phase</strong></p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>Number of observations</strong></p>
+</td>
+<td style="width: 28%;">
+<p>74</p>
+</td>
+<td style="width: 20.3235%;">
+<p>74</p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>Coefficient:</strong> Number of females in team -</p>
+<p>at least one female member</p>
+</td>
+<td style="width: 28%;">
+<p>-1.06*</p>
+<p>(p-value = 0.051)</p>
+</td>
+<td style="width: 20.3235%;">
+<p>-1.046**</p>
+<p>(p-value = 0.047)</p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>Coefficient:</strong> Average number of commits -</p>
+<p>at least 20 commits</p>
+</td>
+<td style="width: 28%;">
+<p>-1.0865*</p>
+<p>(p-value = 0.056)</p>
+</td>
+<td style="width: 20.3235%;">
+<p>-0.901*</p>
+<p>(p-value = 0.095)</p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>Drop-in-deviance</strong></p>
+<p>(Null deviance &ndash; Residual Deviance)</p>
+</td>
+<td style="width: 28%;">
+<p>94.659 - 87.772</p>
+<p>= 6.887</p>
+</td>
+<td style="width: 20.3235%;">
+<p>94.659 - 86.883</p>
+<p>= 7.776</p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>p-value</strong> for drop-in-deviance test of overall fit</p>
+</td>
+<td style="width: 28%;">
+<p>0.02</p>
+</td>
+<td style="width: 20.3235%;">
+<p>0.03</p>
+</td>
+</tr>
+<tr>
+<td style="width: 39%;">
+<p><strong>Accuracy rate</strong></p>
+</td>
+<td style="width: 28%;">
+<p>74.3%</p>
+</td>
+<td style="width: 20.3235%;">
+<p>73%</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 **Table 7 - Results of the final models that predict SE process grade
 during the design phase and the implementation phase**
@@ -455,16 +582,6 @@ and the percentage of unique messages for commits. It should be noted
 that the average number of commits was treated as a numerical variable
 in predicting SE product grade.
 
-      0 female member   At least one female members
-  --- ----------------- -----------------------------
-  A   0.75              0.48
-  F   0.25              0.52
-
-      3-4 members   5-7 members
-  --- ------------- -------------
-  A   0.5           0.586
-  F   0.5           0.413
-
 The relationship that gender has with SE product grade is opposite to
 what we witnessed in SE process Grade. Table 8 showcases the
 distribution of SE product grade based on whether the team has at least
@@ -472,15 +589,88 @@ one female member. Specifically, teams without female are more likely to
 receive an A in SE product than teams with at least female, with
 proportions of receiving an A are 75% and 48% respectively.
 
+<table width="252">
+<tbody>
+<tr>
+<td width="48">
+<p>&nbsp;</p>
+</td>
+<td width="90">
+<p>0 female member</p>
+</td>
+<td width="114">
+<p>At least one female members</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>A</p>
+</td>
+<td width="90">
+<p>0.75</p>
+</td>
+<td width="114">
+<p>0.48</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>F</p>
+</td>
+<td width="90">
+<p>0.25</p>
+</td>
+<td width="114">
+<p>0.52</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+
 Table 8 - Contingency table of whether the team has at least one female
 member and Process grade
 
-\\
+<table width="252">
+<tbody>
+<tr>
+<td width="48">
+<p>&nbsp;</p>
+</td>
+<td width="84">
+<p>3-4 members</p>
+</td>
+<td width="120">
+<p>5-7 members</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>A</p>
+</td>
+<td width="84">
+<p>0.5</p>
+</td>
+<td width="120">
+<p>0.586</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>F</p>
+</td>
+<td width="84">
+<p>0.5</p>
+</td>
+<td width="120">
+<p>0.413</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 Table 9 - Contingency table of whether the team has 3-4 members or 5-7
 members and Process grade
-
-\\
 
 In terms of the number of team members, the relationship with SE product
 grade is less clear than that with SE process grade. However, it seems
@@ -518,22 +708,54 @@ has at least one female member, which is displayed in table 10.
 
 **Table 10 - Results of the final model that predicts SE product grade**
 
-+-------------------------------------------------+-------------------+
-| **Number of observations**                      | 74                |
-+=================================================+===================+
-| **Coefficient:** Number of females in team -    | 1.179\*\*         |
-|                                                 |                   |
-| at least one female member                      | (p-value = 0.032) |
-+-------------------------------------------------+-------------------+
-| **Drop-in-deviance** (Null deviance -- Residual | 101.230 -- 96.227 |
-| Deviance)                                       |                   |
-|                                                 | = 5.003           |
-+-------------------------------------------------+-------------------+
-| **p-value** for drop-in-deviance test of        | 0.025             |
-| overall fit                                     |                   |
-+-------------------------------------------------+-------------------+
-| **Accuracy rate**                               | 59.5%             |
-+-------------------------------------------------+-------------------+
+<table>
+<tbody>
+<tr>
+<td width="180">
+<p><strong>Number of observations</strong></p>
+</td>
+<td width="150">
+<p>74</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p><strong>Coefficient:</strong> Number of females in team -</p>
+<p>at least one female member</p>
+</td>
+<td width="150">
+<p>1.179**</p>
+<p>(p-value = 0.032)</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p><strong>Drop-in-deviance</strong> (Null deviance &ndash; Residual Deviance)</p>
+</td>
+<td width="150">
+<p>101.230 &ndash; 96.227</p>
+<p>= 5.003</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p><strong>p-value</strong> for drop-in-deviance test of overall fit</p>
+</td>
+<td width="150">
+<p>0.025</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p><strong>Accuracy rate</strong></p>
+</td>
+<td width="150">
+<p>59.5%</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
 
 According to table 10, the drop-in-deviance of the model is 5.003 and
 the relevant p-value is 0.03, indicating that the model is effective. In
