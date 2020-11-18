@@ -167,8 +167,8 @@ has at least 20 commits on average.
 
       0 female member   At least 1 female member
   --- ----------------- --------------------------
-  A   0.5               0.74
-  F   0.5               0.26
+  A  | 0.5             |  0.74
+  F  | 0.5              | 0.26
 
 ###  a. Exploratory Data Analysis
 
