@@ -682,8 +682,7 @@ Figure 1 visualizes the distribution of SE product grade based on the
 average number of commits and the percentage of unique message for
 commits during the implementation phase. The figure has shown that the
 teams that receive an F tend to have lower average number of commits and
-lower percentage of ![](commit-message.png){width="3.808333333333333in"
-height="2.158333333333333in"}unique messages during the implementation
+lower percentage of ![](commit-message.png = 400x300) unique messages during the implementation
 phase. The relationship between these two variables with SE Product
 Grade is not clear during the design phase.
 
