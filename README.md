@@ -2,9 +2,7 @@ Bang Nguyen
 
 DATA-231: Applied Statistical Methods
 
-# How Gender, Team Size, and Commit History can Predict the
-Effectiveness of Software Engineering Teamwork in an Educational
-Setting
+# How Gender, Team Size, and Commit History can Predict the Effectiveness of Software Engineering Teamwork in an Educational Setting
 
 I. Introduction
 ===============
