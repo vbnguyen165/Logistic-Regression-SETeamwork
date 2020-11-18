@@ -175,44 +175,73 @@ variables.
 </tbody>
 </table>
 
-  **Number of females in team**   **Gender of team leader**   **Number of team members**   **SE Process Grade**   **SE Product Grade**
-  ------------------------------- --------------------------- ---------------------------- ---------------------- ----------------------
-  None : 24                       Female: 14                  3-4: 16                      A: 49                  A: 42
-  At least one female: 50         Male: 60                    5-7: 58                      F: 25                  F: 32
-
 **Table** **1 - Summary statistics of demographic variables that stay
 constant throughout the two phases of the project**
 
-+----------------+----------------+----------------+----------------+
-|                | **Average      | **Average      | **Percentage   |
-|                | number of      | number of      | of unique      |
-|                | commits -      | commits -      | messages**     |
-|                | numeric**      | binary**       |                |
-+================+================+================+================+
-| **Design       | Median: 26.52  | Less than 20   | Median: 0.79   |
-| Phase**        |                | commits: 23    |                |
-|                | Mean: 30.09    |                | Mean: 0.69     |
-|                |                | At least 20    |                |
-|                | Standard       | commits: 51    | Standard       |
-|                | deviation:     |                | deviation:     |
-|                | 22.74          |                | 0.26           |
-+----------------+----------------+----------------+----------------+
-| **             | Median: 34.90  | Less than 20   | Median:        |
-| Implementation |                | commits: 19    | 0.84605        |
-| Phase**        | Mean: 35.65    |                |                |
-|                |                | At least 20    | Mean:          |
-|                | Standard       | commits: 55    | 0.7487541      |
-|                | deviation:     |                |                |
-|                | 25.69          |                | Standard       |
-|                |                |                | deviation:     |
-|                |                |                | 0.2627371      |
-+----------------+----------------+----------------+----------------+
+<table>
+<tbody>
+<tr>
+<td>
+<p><strong>&nbsp;</strong></p>
+</td>
+<td width="163">
+<p><strong>Average number of commits - numeric</strong></p>
+</td>
+<td width="173">
+<p><strong>Average number of commits - binary</strong></p>
+</td>
+<td>
+<p><strong>Percentage of unique messages</strong></p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Design Phase</strong></p>
+</td>
+<td width="163">
+<p>Median: 26.52</p>
+<p>Mean: 30.09</p>
+<p>Standard deviation: 22.74</p>
+</td>
+<td width="173">
+<p>Less than 20 commits: 23</p>
+<p>At least 20 commits: 51</p>
+</td>
+<td>
+<p>Median: 0.79</p>
+<p>Mean: 0.69</p>
+<p>Standard deviation: 0.26</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><strong>Implementation Phase</strong></p>
+</td>
+<td width="163">
+<p>Median: 34.90</p>
+<p>Mean: 35.65</p>
+<p>Standard deviation: 25.69</p>
+</td>
+<td width="173">
+<p>Less than 20 commits: 19</p>
+<p>At least 20 commits: 55</p>
+</td>
+<td>
+<p>Median: 0.84605</p>
+<p>Mean: 0.7487541</p>
+<p>Standard deviation: 0.2627371</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
 
 **Table** **2 - Summary statistics of variables that are different
 during each phase of the project**
 
-1. Gender, Number of team members, and Number of commits and SE Process Grade
------------------------------------------------------------------------------
+###  a. Exploratory Data Analysis
 
 The analysis has found that the significant factors related to SE
 Process Grade are the same for the design phase and the implementation
@@ -220,22 +249,86 @@ phase, including whether the team has at least one female member,
 whether the team has 3-4 members or 5-7 members, and whether the team
 has at least 20 commits on average.
 
-      0 female member   At least 1 female member
-  --- ----------------- --------------------------
-  A  | 0.5             |  0.74
-  F  | 0.5              | 0.26
-
-###  a. Exploratory Data Analysis
+<table width="252">
+<tbody>
+<tr>
+<td width="48">
+<p>&nbsp;</p>
+</td>
+<td width="84">
+<p>0 female &nbsp;member</p>
+</td>
+<td width="120">
+<p>At least 1 female member</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>A</p>
+</td>
+<td width="84">
+<p>0.5</p>
+</td>
+<td width="120">
+<p>0.74</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>F</p>
+</td>
+<td width="84">
+<p>0.5</p>
+</td>
+<td width="120">
+<p>0.26</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
 
 **Table** **3 - Contingency table of whether the team has 3-4 or 5-7
 membesr and Process grade**
 
-\\
-
-      3-4 members   5-7 members
-  --- ------------- -------------
-  A   0.375         0.74
-  F   0.625         0.26
+<table width="252">
+<tbody>
+<tr>
+<td width="48">
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</td>
+<td width="84">
+<p>3-4 members</p>
+</td>
+<td width="120">
+<p>5-7 members</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>A</p>
+</td>
+<td width="84">
+<p>0.375</p>
+</td>
+<td width="120">
+<p>0.74</p>
+</td>
+</tr>
+<tr>
+<td width="48">
+<p>F</p>
+</td>
+<td width="84">
+<p>0.625</p>
+</td>
+<td width="120">
+<p>0.26</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 **Table** **4 - Contingency table of Whether the team has at least one
 female member and Process grade**
