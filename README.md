@@ -119,6 +119,61 @@ product, 56.8% of the teams receive grade A (at or above expectation)
 and 43.2% receive grade F (below expectation). Table 1 and 2 showcase
 the demographic of the 74 teams from the sample based on the important
 variables.
+<table width="639">
+<tbody>
+<tr>
+<td width="160">
+<p><strong>Number of females in team</strong></p>
+</td>
+<td>
+<p><strong>Gender of team leader</strong></p>
+</td>
+<td>
+<p><strong>Number of team members</strong></p>
+</td>
+<td>
+<p><strong>SE Process Grade</strong></p>
+</td>
+<td>
+<p><strong>SE Product Grade</strong></p>
+</td>
+</tr>
+<tr>
+<td width="160">
+<p>None : 24</p>
+</td>
+<td>
+<p>Female: 14</p>
+</td>
+<td>
+<p>3-4: 16</p>
+</td>
+<td>
+<p>A: 49</p>
+</td>
+<td>
+<p>A: 42</p>
+</td>
+</tr>
+<tr>
+<td width="160">
+<p>At least one female: 50</p>
+</td>
+<td>
+<p>Male: 60</p>
+</td>
+<td>
+<p>5-7: 58</p>
+</td>
+<td>
+<p>F: 25</p>
+</td>
+<td>
+<p>F: 32</p>
+</td>
+</tr>
+</tbody>
+</table>
 
   **Number of females in team**   **Gender of team leader**   **Number of team members**   **SE Process Grade**   **SE Product Grade**
   ------------------------------- --------------------------- ---------------------------- ---------------------- ----------------------
