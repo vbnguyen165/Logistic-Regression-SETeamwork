@@ -1,0 +1,560 @@
+---
+title: "Individual Project - Annotated Bibliography"
+author: "Bang Nguyen"
+date: "11/13/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(gridExtra)
+process_design <- read_excel("process_design.xlsx")
+process_implementation <- read_excel("process_implementation.xlsx")
+product_design <- read_excel("product_design.xlsx")
+product_implementation <- read_excel("product_implementation.xlsx")
+```
+
+# I. PROCESS GRADE
+## 1. DESIGN PHASE
+### a. Summary statistics
+```{r}
+process_design <- process_design %>% dplyr::select(`SE Process grade`, teamMemberCount, femaleTeamMembersPercent, teamLeadGender, meetingHoursAverage, averageNonCodingDeliverablesHoursTotalByStudent, averageCodingDeliverablesHoursTotalByStudent, averageCommitCountByStudent, uniqueCommitMessagePercent)
+colnames(process_design) <- c("processGrade", "memberCount", "femalePercentage","leadGender","meetingHours","averageNonCoding","averageCoding","averageCommit","messagePerc")
+
+#process_design$memberCount <- factor(process_design$memberCount)
+process_design$`processGrade` <- factor(process_design$`processGrade`)
+process_design$leadGender <- factor(process_design$leadGender)
+
+summary(process_design, format = 'percentage')
+```
+
+```{r, warning = FALSE, message = FALSE, fig.align='center'}
+gender1 <- process_design %>% ggplot(aes( y = femalePercentage , x = `processGrade`, fill = `processGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+gender2 <- prop.table(table(process_design$`processGrade`, process_design$leadGender), margin =2)
+gender2
+
+member_count <- process_design %>% group_by(memberCount) %>% mutate(TotalbyMemberCount=n())  %>% group_by(memberCount, `processGrade`,TotalbyMemberCount) %>% summarise(count = n())%>% mutate(perc = count/TotalbyMemberCount) %>% ggplot(aes(x = memberCount, y = perc, fill = `processGrade`)) + geom_bar(stat = 'identity') + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+meeting <- process_design %>% ggplot(aes( y = meetingHours , x = `processGrade`, fill = `processGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+
+coding <- process_design %>% ggplot(aes(y = averageNonCoding, x = averageCoding, color = processGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+commit <- process_design %>% ggplot(aes(y = averageCommit, x = messagePerc, color = processGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+gender <- process_design %>% ggplot(aes( y = femalePercentage , x = `leadGender`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+grid.arrange(gender1, gender, member_count, meeting, coding, commit , ncol = 2, nrow = 3)
+```
+
+It seems like `femalePercentage` is correlated with `leadGender`, so I will only use one variable as the predictor - `femalePercentage`.
+Similarly, `averageCoding` and `averageNonCoding` is correlated, so I will only use averageCoding.
+
+```{r}
+#Full model with every interested predictor (removing multicollinearity)
+model1 <- glm(processGrade~femalePercentage+memberCount+meetingHours+averageCoding+averageCommit+messagePerc, data=process_design, family='binomial')
+summary(model1)
+```
+
+None of the predictor in the full model is significant, now I want fit a model that contains predictors that demonstrate a potential relationship with `processGrade`, as discussed in the EDA report: `femalePercentage`, `memberCount`, `averageCommit`.
+```{r}
+model2 <- glm(processGrade~femalePercentage+memberCount+averageCommit, data=process_design, family='binomial')
+summary(model2)
+```
+
+Now we have `memberCount` as a weakly significant factor. The Residual deviance is almost the same as that for the full model. So this model definitely is better than the model in terms of both complexity and effectiveness.
+
+To improve the model, I want to check the linearity condition to see if there is any recode/transformation that can be done
+
+```{r}
+linearity_female <- process_design %>% arrange(femalePercentage) %>% mutate(id = rep(1:nrow(process_design)), femaleGroup = ifelse(id <= 15, 1, ifelse(id <= 30, 2, ifelse(id <= 45, 3, ifelse(id <= 60, 4, 5)))), femaleGroup = as.factor(femaleGroup))
+
+mean <- linearity_female %>% group_by(femaleGroup) %>% summarise(meanFemale = mean(femalePercentage))
+
+linearity_female %>% group_by(femaleGroup, processGrade) %>% summarise(n())
+odds <- c(11/4, 3/12, 3/12, 4/11, 4/10)
+plot(log(odds)~mean$meanFemale, xlab="meanFemale")  
+
+```
+
+Linearity condition obviously fails here. Howevere, it can be seen that there is a big differnece in log(oddss) between the first group (female percentage = 0) and the other groups with higher female percentage. Therefore, I decide to recode `femalePercentage` into a categorical with 2 values - "Yes" for groups with at least one female, and "No" for groups with no females at all.
+
+```{r}
+process_design <- process_design %>% mutate(female = ifelse(femalePercentage==0, "No", "Yes" ))
+prop.table(table(process_design$`processGrade`, process_design$female), margin =2)
+model3 <- glm(processGrade~female+memberCount+averageCommit, data=process_design, family='binomial')
+summary(model3)
+```
+
+Now `female` is a significant predictor. Next, I check the linearity for commit.
+
+```{r}
+linearity_commit <- process_design %>% arrange(averageCommit) %>% mutate(id = rep(1:nrow(process_design)), commitGroup = ifelse(id <= 15, 1, ifelse(id <= 30, 2, ifelse(id <= 45, 3, ifelse(id <= 60, 4, 5)))), commitGroup = as.factor(commitGroup))
+
+mean_commit <- linearity_commit %>% group_by(commitGroup) %>% summarise(meanCommit = mean(averageCommit))
+
+linearity_commit %>% group_by(commitGroup, processGrade) %>% summarise(n())
+odds <- c(7/8, 7/8, 5/10, 4/11, 2/12)
+plot(log(odds)~mean_commit$meanCommit, xlab="meanCommit")  
+
+```
+
+It seems like there is a difference between those with less than 20 average number of commits and those with more than 20 average number of commits. Therefore, I decided to recode `averageCommit` to a binary variable as well.
+```{r}
+process_design <- process_design %>% mutate(averageCommit_sqrt = averageCommit^0.5)
+process_design <- process_design %>% mutate(commit = ifelse(averageCommit < 20, "<20", ">=20" ))
+prop.table(table(process_design$`processGrade`, process_design$commit), margin =2)
+model4 <- glm(processGrade~female+memberCount+commit, data=process_design, family='binomial')
+summary(model4)
+```
+Now, `commit` is a significant predictor.
+
+Finally, checking linearity for `memberCount` also suggests recoding memberCount into a binary variable: teams with 3-4 members and teams with 5-7 members
+```{r}
+linearity_member <- process_design %>% arrange(memberCount) %>% mutate(id = rep(1:nrow(process_design)), memberGroup = ifelse(id <= 15, 1, ifelse(id <= 30, 2, ifelse(id <= 45, 3, ifelse(id <= 60, 4, 5)))), memberGroup = as.factor(memberGroup))
+
+mean_member <- linearity_member %>% group_by(memberGroup) %>% summarise(meanMember = mean(memberCount))
+
+linearity_member %>% group_by(memberGroup, processGrade) %>% summarise(n())
+odds <- c(7/8, 7/8, 5/10, 4/11, 2/12)
+plot(log(odds)~mean_member$meanMember, xlab="meanMember")  
+
+```
+
+```{r}
+process_design <- process_design %>% mutate(memberCount2 = ifelse(memberCount%in%c(3,4), "3-4", "5-7" ))
+prop.table(table(process_design$`processGrade`, process_design$memberCount2), margin =2)
+model5 <- glm(processGrade~female+memberCount2 +commit, data=process_design, family='binomial')
+summary(model5)
+```
+Now we have `commit` and `memberCount2` as significant predictors. I try removing `female` from the model and performs a drop-in-devian test.
+
+```{r}
+model6 <- glm(processGrade~memberCount2 +commit, data=process_design, family='binomial')
+
+anova(model6, model5, test ='Chisq')
+```
+
+The drop-in-deviance test indicates that we can remove female from the model. Thereofre, I want to investigate why female is no longer important in the model. In other words, I want to check the relationship between `female` and `memberCount2` and between `female` and `commit`.
+```{r}
+table(process_design$female, process_design$memberCount2)
+
+prop.test(c(44, 6), c(58, 16),correct=FALSE, alternative = "greater")
+
+table(process_design$female, process_design$commit)
+
+prop.test(c(8, 16), c(23, 51),correct=FALSE)
+
+```
+According to the two tests above, `female` and `memberCount2` is related to each other!
+Therefore, we only need either of them in the model.
+
+Now, I use leave-one-out cross valdiation to test the accuracy rate of the three models `mod5` `mod6`, and a model `mod7` that includes `female` and `commit` as predictors.
+```{r}
+library(caret)
+
+tr<- trainControl(method = "LOOCV")
+mod5_cv <-train(
+ form = processGrade  ~ female + memberCount2 + commit,
+   data = process_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+mod5_cv$results
+mod6_cv <-train(
+ form =processGrade ~ memberCount2 + commit,
+   data = process_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+mod6_cv$results
+
+mod7_cv <-train(
+ form = processGrade ~ commit + female,
+   data = process_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+mod7_cv$results
+```
+
+The model using `female` and `commit` has the highest accuracy rate.
+Now, I use step-wise selection to find out the best predictors for `processGrade` to see how it agrees with my analysis.
+```{r}
+library(MASS)
+full.model.product <- glm(processGrade~leadGender+femalePercentage+female+memberCount+memberCount2+meetingHours+averageCoding+commit+messagePerc+averageNonCoding+averageCommit, data=process_design, family='binomial')
+step.model <- full.model.product %>% stepAIC(trace = FALSE)
+step.model
+```
+
+`mod6` is the best model according to the step-wise selection based on AIC. However, I will use `mod7`, which includes `female` and `commit` as predictors as the final model since the accuracy rate is higher and I am more interested in looking at gender differences.
+
+```{r}
+summary(mod7_cv)
+1-pchisq(94.659-87.772,df=2)
+```
+
+
+
+
+## 2. IMPLEMENTATION PHASE
+### a. Summary Statistics
+```{r}
+process_implementation <- process_implementation %>% mutate(`processGrade` = `SE Process class`)
+process_implementation <- process_implementation %>% dplyr::select(`processGrade`, teamMemberCount, femaleTeamMembersPercent, teamLeadGender, meetingHoursAverage, averageNonCodingDeliverablesHoursTotalByStudent, averageCodingDeliverablesHoursTotalByStudent, averageCommitCountByStudent, uniqueCommitMessagePercent)
+colnames(process_implementation) <- c("processGrade", "memberCount", "femalePercentage","leadGender","meetingHours","averageNonCoding","averageCoding","averageCommit","messagePerc")
+
+process_implementation$`processGrade` <- factor(process_implementation$`processGrade`)
+process_implementation$leadGender <- factor(process_implementation$leadGender)
+
+summary(process_implementation, format = 'percentage')
+```
+```{r}
+gender1 <- process_implementation %>% ggplot(aes( y = femalePercentage , x = `processGrade`, fill = `processGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+prop.table(table(process_implementation$`processGrade`, process_implementation$leadGender), margin =2)
+
+member <- process_implementation %>% group_by(memberCount) %>% mutate(TotalbyMemberCount=n())  %>% group_by(memberCount, `processGrade`,TotalbyMemberCount) %>% summarise(count = n())%>% mutate(perc = count/TotalbyMemberCount) %>% ggplot(aes(x = memberCount, y = perc, fill = `processGrade`)) + geom_bar(stat = 'identity') + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+meeting <- process_implementation %>% ggplot(aes( y = meetingHours , x = `processGrade`, fill = `processGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+coding <- process_implementation %>% ggplot(aes(y = averageNonCoding, x = averageCoding, color = processGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+commit <- process_implementation %>% ggplot(aes(y = averageCommit, x = messagePerc, color = processGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+grid.arrange(gender1, member_count, meeting, coding, commit , ncol = 2, nrow = 3)
+```
+
+The plots above has shown that the relationship between the response variable and the potential predictors are almost the same as in the design phase.
+So, I can use the same predictors from the design phase to predict `processGrade` in the implementation!
+```{r}
+process_implementation <- process_implementation %>% mutate(female = ifelse(femalePercentage==0, "No", "Yes" ))
+process_implementation <- process_implementation %>% mutate(memberCount2 = ifelse(memberCount%in%c(3,4), "3-4", "5-7" ))
+process_implementation <- process_implementation %>% mutate(commit = ifelse(averageCommit < 20, "<20", ">=20" ))
+prop.table(table(process_implementation$`processGrade`, process_implementation$commit), margin =2)
+
+
+```
+
+
+```{r}
+mod5_cv_implementation <-train(
+ form = processGrade  ~ female + memberCount2 + commit,
+   data = process_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod5_cv_implementation)
+mod5_cv_implementation$results
+mod6_cv_implementation <-train(
+ form =processGrade ~ memberCount2 + commit,
+   data = process_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod6_cv_implementation)
+mod6_cv_implementation$results
+
+mod7_cv_implementation <-train(
+ form =processGrade ~ female + commit,
+   data = process_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod7_cv_implementation)
+mod7_cv_implementation$results
+```
+
+```{r}
+library(MASS)
+full.model.product <- glm(processGrade~leadGender+femalePercentage+female+memberCount+memberCount2+meetingHours+averageCoding+commit+messagePerc+averageNonCoding+averageCommit, data=process_implementation, family='binomial')
+step.model <- full.model.product %>% stepAIC(trace = FALSE)
+summary(step.model)
+
+summary(mod7_cv_implementation)
+1-pchisq(94.659-86.883,df=2)
+
+```
+
+# II. PRODUCT
+## 1. DESIGN PHASE
+### a. Summary statistics
+```{r}
+product_design <- product_design %>% dplyr::select(`productLetterGrade`, teamMemberCount, femaleTeamMembersPercent, teamLeadGender, meetingHoursAverage, averageNonCodingDeliverablesHoursTotalByStudent, averageCodingDeliverablesHoursTotalByStudent, averageCommitCountByStudent, uniqueCommitMessagePercent)
+product_design
+
+
+colnames(product_design) <- c("productGrade", "memberCount", "femalePercentage","leadGender","meetingHours","averageNonCoding","averageCoding","averageCommit","messagePerc")
+
+product_design$`productGrade` <- factor(product_design$`productGrade`)
+product_design$leadGender <- factor(product_design$leadGender)
+
+summary(product_design, format = 'percentage')
+```
+
+### b. Relationship between Product Grade with interested predictors
+
+```{r}
+gender1 <- product_design %>% ggplot(aes( y = femalePercentage , x = `productGrade`, fill = `productGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+gender2 <- prop.table(table(product_design$`productGrade`, product_design$leadGender), margin =2)
+
+member_count <- product_design %>% group_by(memberCount) %>% mutate(TotalbyMemberCount=n())  %>% group_by(memberCount, `productGrade`,TotalbyMemberCount) %>% summarise(count = n())%>% mutate(perc = count/TotalbyMemberCount) %>% ggplot(aes(x = memberCount, y = perc, fill = `productGrade`)) + geom_bar(stat = 'identity') + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+meeting <- product_design %>% ggplot(aes( y = meetingHours , x = `productGrade`, fill = `productGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+
+coding <- product_design %>% ggplot(aes(y = averageNonCoding, x = averageCoding, color = productGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+commit <- product_design %>% ggplot(aes(y = averageCommit, x = messagePerc, color = productGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+grid.arrange(gender1, gender, member_count, meeting, coding, commit , ncol = 2, nrow = 3)
+```
+The factors that show potential relationship with `productGrade` are `female`, `memberCount2`, `averageCommit`, and 'messagePerc'.
+```{r}
+mod1_product_design <- glm(productGrade~femalePercentage+memberCount+averageCommit+messagePerc, data=product_design, family = "binomial") 
+summary(mod1_product_design)
+```
+
+None of the predictors are significant, so I try recoding the variables like earlier
+
+
+```{r}
+product_design <- product_design %>% mutate(female = ifelse(femalePercentage==0, "No", "Yes" ))
+product_design <- product_design %>% mutate(memberCount2 = ifelse(memberCount%in%c(3,4), "3-4", "5-7" ))
+product_design <- product_design %>% mutate(commit = ifelse(averageCommit < 20, "<20", ">=20" ))
+prop.table(table(product_design$`productGrade`, product_design$female), margin =2)
+prop.table(table(product_design$`productGrade`, product_design$memberCount2), margin =2)
+prop.table(table(product_design$`productGrade`, product_design$commit), margin =2)
+
+```
+
+```{r}
+mod5_cv_product <-train(
+ form = productGrade  ~ female + memberCount2 + commit,
+   data = product_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod5_cv_product)
+mod5_cv_product$results
+mod6_cv_product <-train(
+ form =productGrade ~ memberCount2 + commit,
+   data = product_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod6_cv_product)
+mod6_cv_product$results
+
+mod7_cv_product <-train(
+ form =productGrade ~ female + commit,
+   data = product_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod7_cv_product)
+mod7_cv_product$results
+
+mod8_cv_product <-train(
+ form =productGrade ~ female,
+   data = product_design,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod8_cv_product)
+mod8_cv_product$results
+```
+
+Seems like only using female is the best choice.
+To make sure that I did not overlook the predictors that were not considered after EDA, I used a step-wise selection to find out the best predictors out of all explanatory variables
+```{r}
+library(MASS)
+full.model.product <- glm(productGrade~leadGender+femalePercentage+female+memberCount+memberCount2+meetingHours+averageCoding+commit+messagePerc+averageNonCoding+averageCommit, data=product_design, family='binomial')
+step.model <- full.model.product %>% stepAIC(trace = FALSE)
+summary(step.model)
+female_only <- (glm(formula = productGrade ~ female, 
+    family = "binomial", data = product_design))
+anova(step.model, female_only, test='Chisq')
+```
+
+Even though step-wise selection suggests the best model use all three predictors, the nest drop-in-deviance test suggests that using only female as a predictor would be as effective.
+
+## 2. IMPLEMENTATION PHASE
+### a. Summary statistics
+```{r}
+product_implementation <- product_implementation %>% dplyr::select(`productLetterGrade`, teamMemberCount, femaleTeamMembersPercent, teamLeadGender, meetingHoursAverage, averageNonCodingDeliverablesHoursTotalByStudent, averageCodingDeliverablesHoursTotalByStudent, averageCommitCountByStudent, uniqueCommitMessagePercent)
+
+
+colnames(product_implementation) <- c("productGrade", "memberCount", "femalePercentage","leadGender","meetingHours","averageNonCoding","averageCoding","averageCommit","messagePerc")
+
+product_implementation$`productGrade` <- factor(product_implementation$`productGrade`)
+product_implementation$leadGender <- factor(product_implementation$leadGender)
+
+summary(product_implementation, format = 'percentage')
+```
+
+### b. Relationship between Product Grade with interested predictors
+```{r}
+gender1 <- product_implementation %>% ggplot(aes( y = femalePercentage , x = `productGrade`, fill = `productGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+gender2 <- prop.table(table(product_implementation$`productGrade`, product_implementation$leadGender), margin =2)
+
+member_count <- product_implementation %>% group_by(memberCount) %>% mutate(TotalbyMemberCount=n())  %>% group_by(memberCount, `productGrade`,TotalbyMemberCount) %>% summarise(count = n())%>% mutate(perc = count/TotalbyMemberCount) %>% ggplot(aes(x = memberCount, y = perc, fill = `productGrade`)) + geom_bar(stat = 'identity') + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+meeting <- product_implementation %>% ggplot(aes( y = meetingHours , x = `productGrade`, fill = `productGrade`)) + geom_boxplot() + geom_point(position='jitter', alpha = 0.5) + stat_summary(fun.y=mean, geom="point", shape=20, size=5, color="steelblue", fill="steelblue") + theme_light() + scale_fill_brewer(palette = 'Set2')
+
+
+coding <- product_implementation %>% ggplot(aes(y = averageNonCoding, x = averageCoding, color = productGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+commit <- product_implementation %>% ggplot(aes(y = averageCommit, x = messagePerc, color = productGrade)) +geom_point()+ theme_light() + scale_color_brewer(palette = 'Set2')
+
+grid.arrange(gender1, gender, member_count, meeting, coding, commit , ncol = 2, nrow = 3)
+```
+The factors that show potential relationship with `productGrade` are `female`, `memberCount2`, `averageCommit`, and 'messagePerc'.
+```{r}
+mod1_product_implementation <- glm(productGrade~femalePercentage+memberCount+averageCommit+messagePerc, data=product_implementation, family = "binomial") 
+summary(mod1_product_implementation)
+```
+Try, recoding the variables
+```{r}
+product_implementation <- product_implementation %>% mutate(female = ifelse(femalePercentage==0, "No", "Yes" ))
+product_implementation <- product_implementation %>% mutate(memberCount2 = ifelse(memberCount%in%c(3,4), "3-4", "5-7" ))
+
+prop.table(table(product_implementation$`productGrade`, product_design$female), margin =2)
+prop.table(table(product_implementation$`productGrade`, product_design$memberCount2), margin =2)
+
+```
+
+```{r}
+mod5_cv_product_impl <-train(
+ form = productGrade  ~ female + memberCount2 + averageCommit,
+   data = product_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod5_cv_product_impl)
+mod5_cv_product_impl$results
+mod6_cv_product_impl <-train(
+ form =productGrade ~ memberCount2 + averageCommit,
+   data = product_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod6_cv_product_impl)
+mod6_cv_product_impl$results
+
+mod7_cv_product_impl <-train(
+ form =productGrade ~ female + averageCommit,
+   data = product_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod7_cv_product_impl)
+mod7_cv_product_impl$results
+
+mod8_cv_product_impl <-train(
+ form =productGrade ~ female,
+   data = product_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+summary(mod8_cv_product_impl)
+mod8_cv_product_impl$results
+
+```
+Again, using only `female` seems to be the best choice here.
+
+Try step-wise selection from the full model
+```{r}
+library(MASS)
+full.model.product <- glm(productGrade~leadGender+femalePercentage+female+memberCount+memberCount2+meetingHours+averageCoding+messagePerc+averageNonCoding+averageCommit, data=product_implementation, family='binomial')
+step.model <- full.model.product %>% stepAIC(trace = FALSE)
+summary(step.model)
+```
+Step-wise comes up with a differnt model where all predictors are significant!
+```{r}
+step.model_cv <-train(
+ form = productGrade  ~ female + memberCount2 + messagePerc + 
+   averageCommit,
+   data = product_implementation,
+   trControl = tr,
+   method = "glm",
+   family = "binomial"
+ )
+step.model_cv$results
+
+product_implementation <- product_implementation %>% mutate(averageCommit10 = averageCommit/10)
+best <- glm(formula = productGrade ~ female + memberCount2  + averageCommit10, family = "binomial", data = product_implementation)
+female_only<- glm(formula = productGrade ~ female, family = "binomial", data = product_implementation)
+```
+
+Accuracy rate is also good.
+
+Test the relationship between `femalePercentage` and `leadGender`. Even thoug the distribution for the two variables is not normal, the sample size is sufficiently large (14 for female leaders and 60 for male leaders). So, we can use the t-test for two means.
+```{r}
+female_leader <- process_design %>% filter(leadGender == 1)
+qqnorm(female_leader$femalePercentage)
+male_leader <- process_design %>% filter(leadGender != 1)
+qqnorm(male_leader$femalePercentage)
+t.test(x=female_leader$femalePercentage, y=male_leader$femalePercentage, alternative = "greater")
+```
+
+The p-value of 0.0003 provides very strong evidence that teams lead by a female student have a higher percentage of female team members than teasm lead by a male student.
+```{r}
+1-pchisq(16.002,df=4)
+
+```
+
+
+```{r}
+linearity_commit <- product_implementation %>% arrange(averageCommit) %>% mutate(id = rep(1:nrow(process_design)), commitGroup = ifelse(id <= 15, 1, ifelse(id <= 30, 2, ifelse(id <= 45, 3, ifelse(id <= 60, 4, 5)))), commitGroup = as.factor(commitGroup))
+
+mean_commit <- linearity_commit %>% group_by(commitGroup) %>% summarise(meanCommit = mean(averageCommit))
+
+linearity_commit %>% group_by(commitGroup, productGrade) %>% summarise(n())
+odds <- c(7/8, 7/8, 5/10, 4/11, 2/12)
+plot(log(odds)~mean_commit$meanCommit, xlab="meanCommit")  
+```
+
+```{r}
+linearity_message <- product_implementation %>% arrange(messagePerc) %>% mutate(id = rep(1:nrow(product_implementation)), messageGroup = ifelse(id <= 15, 1, ifelse(id <= 30, 2, ifelse(id <= 45, 3, ifelse(id <= 60, 4, 5)))), messageGroup = as.factor(messageGroup))
+
+mean_message <- linearity_message %>% group_by(messageGroup) %>% summarise(meanMessagePerc = mean(messagePerc))
+mean_message
+
+linearity_message %>% group_by(messageGroup, productGrade) %>% summarise(n())
+odds <- c(6/9, 9/6, 6/9, 6/9, 5/9)
+plot(log(odds)~mean_message$meanMessagePerc, xlab="meanMesagePerc")  
+```
+
+Linearity fails for `messagePerc`! Therefore, I decided to keep the original best predictors with only `female` as a predictor - `mod8_cv_design_impl`
+```{r}
+summary(mod8_cv_product_impl)
+summary(mod8_cv_product)
+```
+```{r}
+product_design %>% summarise(mean(messagePerc), median(messagePerc), sd(messagePerc))
+product_implementation %>% summarise(mean(messagePerc), median(messagePerc), sd(messagePerc))
+
+```
+
+
